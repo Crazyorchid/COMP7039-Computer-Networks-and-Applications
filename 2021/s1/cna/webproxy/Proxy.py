@@ -46,7 +46,7 @@ except:
 try:
   # Listen on the server socket
   # ~~~~ INSERT CODE ~~~~
-  s.listen(10)
+  s.listen(5)
   # ~~~~ END CODE INSERT ~~~~
   print 'Listening to socket'
 except:
@@ -55,13 +55,11 @@ except:
 
 while True:
   print 'Waiting connection...'
-
   clientSocket = None
   try:
     # Accept connection from client and store in the clientSocket
     # ~~~~ INSERT CODE ~~~~
     while True:
-    # 接受一个新连接:
       clientSocket, address = s.accept()
     # ~~~~ END CODE INSERT ~~~~
     print 'Received a connection from:', args.hostname
@@ -140,13 +138,13 @@ while True:
       # What would be the appropriate status code and message to send to client?
       # store the value in clientResponse
       # ~~~~ INSERT CODE ~~~~
-      clientResponse = clientSocket.recv(1024).decode('utf-8')
+      clientResponse = s.recv(BUFFER_SIZE).decode()
       # ~~~~ END CODE INSERT ~~~~
 
       print 'Sending to the client:'
       print '> ' + clientResponse
       print '>'
-      clientSocket.sendall(clientResponse + "\r\n\r\n")
+      s.sendall(clientResponse + "\r\n\r\n")
 
     else:
       originServerSocket = None
@@ -181,7 +179,7 @@ while True:
         # originServerRequest is the first line in the request and
         # originServerRequestHeader is the second line in the request
         # ~~~~ INSERT CODE ~~~~
-        originServerRequest = originServerSocket.split('\n')
+        originServerRequest = clientResponse.split('\n')
         originServerRequestHeader = originServerRequest[0].split()
         
         # ~~~~ END CODE INSERT ~~~~
@@ -209,7 +207,7 @@ while True:
 
         # Send the response to the client
         # ~~~~ INSERT CODE ~~~~
-        clientSocket.sendall(originServerResponse)
+        originServerSocket.sendall(request)
         # ~~~~ END CODE INSERT ~~~~
 
         # finished sending to origin server - shutdown socket writes
