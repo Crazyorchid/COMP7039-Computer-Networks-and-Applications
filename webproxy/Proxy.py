@@ -23,7 +23,7 @@ args = parser.parse_args()
 try:
   # Create a server socket
   # ~~~~ INSERT CODE ~~~~
-  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   # ~~~~ END CODE INSERT ~~~~
   print 'Connected socket'
 except:
@@ -35,18 +35,18 @@ try:
   # ~~~~ INSERT CODE ~~~~
   address = args.hostname
   portNum = int(args.port)
-  s.bind((address, portNum))
+  serverSocket.bind((address, portNum))
   
   # ~~~~ END CODE INSERT ~~~~
   print 'Port is bound'
 except:
-  print('Port is in use')
+  print 'Port is in use'
   sys.exit()
 
 try:
   # Listen on the server socket
   # ~~~~ INSERT CODE ~~~~
-  s.listen(5)
+  serverSocket.listen(5)
   # ~~~~ END CODE INSERT ~~~~
   print 'Listening to socket'
 except:
@@ -59,10 +59,9 @@ while True:
   try:
     # Accept connection from client and store in the clientSocket
     # ~~~~ INSERT CODE ~~~~
-    while True:
-      clientSocket, address = s.accept()
+      clientSocket, address = serverSocket.accept()               
     # ~~~~ END CODE INSERT ~~~~
-    print 'Received a connection from:', args.hostname
+      print 'Received a connection from:', address
   except:
     print 'Failed to accept connection'
     sys.exit()
@@ -71,9 +70,7 @@ while True:
   # Get request from client
   # and store it in message
   # ~~~~ INSERT CODE ~~~~
-  message = s.recv(BUFFER_SIZE) 
-  #first_line = request.split('\n')[0]
- # url = first_line.split(' ')[1]
+  message = clientSocket.recv(BUFFER_SIZE).decode() 
   # ~~~~ END CODE INSERT ~~~~
 
   print 'Received request:'
@@ -124,8 +121,7 @@ while True:
     # ProxyServer finds a cache hit
     # Send back contents of cached file
     # ~~~~ INSERT CODE ~~~~
-    s.sendall(outputdata)
-    #s.send("Content-Type:text/html\r\n")
+    clientSocket.sendall(outputdata)
     # ~~~~ END CODE INSERT ~~~~
 
     cacheFile.close()
@@ -138,13 +134,14 @@ while True:
       # What would be the appropriate status code and message to send to client?
       # store the value in clientResponse
       # ~~~~ INSERT CODE ~~~~
-      clientResponse = s.recv(BUFFER_SIZE).decode()
+      clientResponse = serverSocket.recv(BUFFER_SIZE)
+      #clientResponse ='HTTP/1.0 200 OK'
       # ~~~~ END CODE INSERT ~~~~
 
       print 'Sending to the client:'
       print '> ' + clientResponse
       print '>'
-      s.sendall(clientResponse + "\r\n\r\n")
+      serverSocket.sendall(clientResponse + "\r\n\r\n")
 
     else:
       originServerSocket = None
@@ -179,13 +176,14 @@ while True:
         # originServerRequest is the first line in the request and
         # originServerRequestHeader is the second line in the request
         # ~~~~ INSERT CODE ~~~~
-        originServerRequest = clientResponse.split('\n')
-        originServerRequestHeader = originServerRequest[0].split()
-        
+        originServerRequest = originServerSocket.recv(4096)
+        originServerRequestHeader = originServerRequest.split('\n')[0]
+        #print originServerRequest
         # ~~~~ END CODE INSERT ~~~~
 
         # Construct the request to send to the origin server
         request = originServerRequest + '\r\n' + originServerRequestHeader + '\r\n\r\n'
+        #print request
 
         # Request the web resource from origin server
         print 'Forwarding request to origin server:'
@@ -202,7 +200,7 @@ while True:
 
         # Get the response from the origin server
         # ~~~~ INSERT CODE ~~~~
-        originServerResponse = originServerSocket.recv(1024).decode('utf-8')
+        originServerResponse = originServerFileObj.readlines()
         # ~~~~ END CODE INSERT ~~~~
 
         # Send the response to the client
@@ -226,7 +224,7 @@ while True:
 
         # Save orogin server response in the cache file
         # ~~~~ INSERT CODE ~~~~
-        cacheFile.write(originServerResponse)
+        #cacheFile.write(originServerResponse)
         # ~~~~ END CODE INSERT ~~~~
 
         print 'done sending'
