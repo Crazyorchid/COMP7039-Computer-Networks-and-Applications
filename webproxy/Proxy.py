@@ -1,3 +1,13 @@
+"""
+Programming Assignment 1: HTTP Web Proxy Server Programming Assignment (Python based)
+
+COMP7039 Computer Networks and Applications
+
+Student ID: a1778478
+
+Name: Runtao Zhuge
+ 
+"""
 # Include the libraries for socket and system calls
 import socket
 import sys
@@ -34,7 +44,10 @@ except:
 try:
   # Bind the the server socket to a host and port
   # ~~~~ INSERT CODE ~~~~
+ 
+  #align the format of the inputs
   address = args.hostname
+  #str--->int so the .bind can take the input
   portNum = int(args.port)
   serverSocket.bind((address, portNum))
   
@@ -122,6 +135,7 @@ while True:
     # ProxyServer finds a cache hit
     # Send back contents of cached file
     # ~~~~ INSERT CODE ~~~~
+    #change list to str.
     clientSocket.send(''.join(outputdata))
     # ~~~~ END CODE INSERT ~~~~
 
@@ -178,6 +192,8 @@ while True:
         # originServerRequestHeader is the second line in the request
         # ~~~~ INSERT CODE ~~~~
         originServerRequest = method + ' ' + resource + ' ' + version
+        #split the original string and put the string back to list and get the second part of
+        #the message as header
         originServerRequestHeader = message.split("HTTP/1.1\r\n",1)[1]
         originServerRequestHeader = ''.join(originServerRequestHeader)
         #print originServerRequest
