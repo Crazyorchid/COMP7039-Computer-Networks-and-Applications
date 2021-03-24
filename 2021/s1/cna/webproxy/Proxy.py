@@ -20,6 +20,7 @@ args = parser.parse_args()
 # ~~~~ INSERT CODE ~~~~
 # ~~~~ END CODE INSERT ~~~~
 
+
 try:
   # Create a server socket
   # ~~~~ INSERT CODE ~~~~
@@ -61,7 +62,7 @@ while True:
     # ~~~~ INSERT CODE ~~~~
       clientSocket, address = serverSocket.accept()               
     # ~~~~ END CODE INSERT ~~~~
-      print 'Received a connection from:', address
+      print 'Received a connection from:', args.port
   except:
     print 'Failed to accept connection'
     sys.exit()
@@ -121,7 +122,7 @@ while True:
     # ProxyServer finds a cache hit
     # Send back contents of cached file
     # ~~~~ INSERT CODE ~~~~
-    clientSocket.sendall(outputdata)
+    clientSocket.send(''.join(outputdata))
     # ~~~~ END CODE INSERT ~~~~
 
     cacheFile.close()
@@ -134,7 +135,7 @@ while True:
       # What would be the appropriate status code and message to send to client?
       # store the value in clientResponse
       # ~~~~ INSERT CODE ~~~~
-      clientResponse = serverSocket.recv(BUFFER_SIZE)
+      clientResponse = '500 Internal Server Error'
       #clientResponse ='HTTP/1.0 200 OK'
       # ~~~~ END CODE INSERT ~~~~
 
@@ -176,8 +177,9 @@ while True:
         # originServerRequest is the first line in the request and
         # originServerRequestHeader is the second line in the request
         # ~~~~ INSERT CODE ~~~~
-        originServerRequest = originServerSocket.recv(4096)
-        originServerRequestHeader = originServerRequest.split('\n')[0]
+        originServerRequest = method + ' ' + resource + ' ' + version
+        originServerRequestHeader = message.split("HTTP/1.1\r\n",1)[1]
+        originServerRequestHeader = ''.join(originServerRequestHeader)
         #print originServerRequest
         # ~~~~ END CODE INSERT ~~~~
 
@@ -200,12 +202,12 @@ while True:
 
         # Get the response from the origin server
         # ~~~~ INSERT CODE ~~~~
-        originServerResponse = originServerFileObj.readlines()
+        originServerResponse = originServerSocket.recv(BUFFER_SIZE)
         # ~~~~ END CODE INSERT ~~~~
 
         # Send the response to the client
         # ~~~~ INSERT CODE ~~~~
-        originServerSocket.sendall(request)
+        clientSocket.sendall(originServerResponse)
         # ~~~~ END CODE INSERT ~~~~
 
         # finished sending to origin server - shutdown socket writes
@@ -224,7 +226,7 @@ while True:
 
         # Save orogin server response in the cache file
         # ~~~~ INSERT CODE ~~~~
-        #cacheFile.write(originServerResponse)
+        cacheFile.write(originServerResponse)
         # ~~~~ END CODE INSERT ~~~~
 
         print 'done sending'
