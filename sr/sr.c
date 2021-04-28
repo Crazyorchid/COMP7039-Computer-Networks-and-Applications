@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "emulator.h"
-#include "sr.h"
+#include "gbn.h"
 #include <string.h>
 
 /* ******************************************************************
@@ -32,17 +32,23 @@
 /*
 Global variables
 */
+#define RTT  15.0
+#define RTT  15.0       /* round trip time.  MUST BE SET TO 15.0 when submitting assignment */
+#define WINDOWSIZE 6    /* Maximum number of buffered unacked packet */
+#define SEQSPACE 7      /* min sequence space for GBN must be at least windowsize + 1 */
+#define NOTINUSE (-1)   /* used to fill header fields that are not being used */
+
+
 int MAX_BUFFER = 1500;
-#define WINDOW_SIZE 6
 struct pkt queue[50000];
-struct pkt receiver_buffer[WINDOW_SIZE];
+struct pkt receiver_buffer[WINDOWSIZE];
 int seqnums_A;
 int base_A;
 
 struct pkt data_packet_A;
 
 int last_received_B;
-float timeout_value;
+/*float RTT;*/
 int from_app_A=0;
 int from_transport_A=0;
 int to_transport_B=0;
@@ -93,8 +99,8 @@ void A_output(struct msg message)
     data_packet_A = create_pkt(seqnums_A, -1000, message.data);
     /* printf("at A, created packet with sequence number %d\n", seqnums_A); */
     queue[seqnums_A++] = data_packet_A;
-    if (seqnums_A - base_A <= WINDOW_SIZE) {
-        starttimer(seqnums_A-1, timeout_value);
+    if (seqnums_A - base_A <= WINDOWSIZE) {
+        starttimer(seqnums_A-1, RTT);
         /* log_packet('A', data_packet_A); */
         /* printf("checksum A is %d\n", data_packet_A.checksum); */
 
@@ -126,14 +132,14 @@ void A_input(struct pkt packet)
           stoptimer(packet.acknum);
           queue[packet.acknum].acknum = -1;
           if (base_A == packet.acknum) {
-            int packet_to_sent = base_A + WINDOW_SIZE;
+            int packet_to_sent = base_A + WINDOWSIZE;
             base_A++;
             while (queue[base_A].acknum == -1 && base_A < seqnums_A) {
               base_A++;
             }
             /* printf("base_A moved to %d\n", base_A); */
-            while (packet_to_sent < seqnums_A && packet_to_sent < base_A + WINDOW_SIZE) {
-              starttimer(packet_to_sent, timeout_value);
+            while (packet_to_sent < seqnums_A && packet_to_sent < base_A + WINDOWSIZE) {
+              starttimer(packet_to_sent, RTT);
               /* log_packet('A', queue[packet_to_sent]); */
               tolayer3(0, queue[packet_to_sent++]);
             }
@@ -156,7 +162,7 @@ void A_timerinterrupt(void)
   int packetType=0;
   if (TRACE > 0)
     printf("----A: time out,resend packets!\n");
-  starttimer(packetType, timeout_value);
+  starttimer(packetType, RTT);
   /*log_packet('A', queue[packetType]);*/
   tolayer3(0, queue[packetType]);
   from_transport_A++;
@@ -168,7 +174,7 @@ void A_init()
 {
   seqnums_A = 0;
   base_A = 0;
-  timeout_value = 20.0;
+  /*RTT = 20.0;*/
 }
 
 /* called from layer 5, passed the data to be sent to other side */
@@ -199,12 +205,12 @@ void B_input(struct pkt packet)
             printf("at B, packet with message %.*s, seq number %d sent to layer 5 i.e. application layer\n", (int)sizeof(packet.payload), packet.payload,packet.seqnum); */
             to_app_B++;
             tolayer5(1, packet.payload);
-            i=packet.seqnum%WINDOW_SIZE;
+            i=packet.seqnum%WINDOWSIZE;
             receiver_buffer[i] = packet;
             receiver_buffer[i].acknum =  -1;
             i++;
             last_received_B++;
-            i=i%WINDOW_SIZE;
+            i=i%WINDOWSIZE;
             while (receiver_buffer[i].acknum !=  -1) {
               tolayer5(1, receiver_buffer[i].payload);
               /* printf("at B, packet with message %.*s and sequence number %d sent to layer 5 i.e. application layer\n", (int)sizeof(receiver_buffer[i].payload), receiver_buffer[i].payload, receiver_buffer[i].seqnum); */
@@ -213,7 +219,7 @@ void B_input(struct pkt packet)
 
               receiver_buffer[i].acknum = -1;
               i++;
-              i=i%WINDOW_SIZE;       
+              i=i%WINDOWSIZE;       
               last_received_B++;
             }          
         } 
@@ -221,13 +227,13 @@ void B_input(struct pkt packet)
         {
             if (TRACE > 0) 
               printf("----B: packet corrupted or not expected sequence number, resend ACK!\n");
-            if (packet.seqnum > last_received_B + WINDOW_SIZE) {
+            if (packet.seqnum > last_received_B + WINDOWSIZE) {
               /* printf("at B, received packet number outside buffer window so ignoring packet %d.\n", packet.seqnum); */
               return;
             }
             else if (packet.seqnum > last_received_B){
               /* printf("at B, buffering the packet %d in window\n", packet.seqnum); */
-              receiver_buffer[packet.seqnum%WINDOW_SIZE] = packet;
+              receiver_buffer[packet.seqnum%WINDOWSIZE] = packet;
             }
         }
         ack_packet = create_pkt(-1000, packet.seqnum, NULL);
@@ -251,7 +257,7 @@ void B_init()
 {
   int i;
   last_received_B = -1;
-  for (i=0; i < WINDOW_SIZE; i++) {
+  for (i=0; i < WINDOWSIZE; i++) {
     receiver_buffer[i].acknum = -1;
   }
 }
