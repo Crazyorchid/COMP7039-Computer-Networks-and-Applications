@@ -181,20 +181,17 @@ void A_input(struct pkt packet)
       sendbuffer[packet.acknum % WINDOWSIZE] = packet.acknum;
 
     }
-        
-	    /* slide window by the number of packets ACKed */
-	    /* start timer again if there are still more unacked packets in window */
-            
             
     }   
     else
       if (TRACE > 0)
         printf ("----A: duplicate ACK received, do nothing!\n");
+    }
+ 
   }
-  else 
+   else 
     if (TRACE > 0)
       printf ("----A: corrupted ACK is received, do nothing!\n");
-  }
 }
 
 /* called when A's timer goes off */
