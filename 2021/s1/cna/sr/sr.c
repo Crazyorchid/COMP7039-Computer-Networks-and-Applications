@@ -257,7 +257,7 @@ void B_input(struct pkt packet)
       tolayer5(B, packet.payload);
       expectedseqnum = (expectedseqnum + 1) % SEQSPACE;
     
-     for(i = packet.seqnum % WINDOWSIZE; i < WINDOWSIZE + 6; i++)
+     for(i = packet.seqnum % WINDOWSIZE; i < packet.seqnum % WINDOWSIZE + 6; i++)
 			{			
 				if (receivebuffer[i] == expectedseqnum ){
 
