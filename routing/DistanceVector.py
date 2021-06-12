@@ -1,6 +1,30 @@
 #!/usr/bin/env python3
-import numpy
-print("here")
+def getInput():
+    last = '   '
+    num = []
+    numFlag = True
+    messageFlag = True
+    messageList = []
+    message = []
+    while True:
+        if numFlag:
+            data = input()
+            num.append(data)
+            if data == '':
+                numFlag = False
+            continue
+        router = input()
+        if router == "":
+            messageList.append(message)
+            messageFlag = False
+            message = []
+            if last == '':
+                break
+        else:
+            message.append(router)
+        last = router
+    return num, messageList[:-1]
+
 def DistanceVector():
     last = '   '
     messageList = []
@@ -15,5 +39,5 @@ def DistanceVector():
     for item in messageList:
         print(item)
 
-DistanceVector()
+print(getInput())
     
