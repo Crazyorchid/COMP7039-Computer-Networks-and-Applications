@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+print("sfafa")
 def DistanceVector():
     flag = True
     session = True
