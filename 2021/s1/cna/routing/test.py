@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 def DistanceVector():
     flag = True
     session = True
