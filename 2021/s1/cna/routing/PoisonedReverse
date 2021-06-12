@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from copy import deepcopy
 INF = 16
 
 def getInput():
