@@ -1,3 +1,13 @@
+#//==================================
+#// Computer Networks & Applications
+#// Student: Vandit Jyotindra Gajjar
+#// Student ID: a1779153
+#// Semester: 1
+#// Year: 2020
+#// Assignment: 3
+#//===================================
+
+#Importing utilities copy and sys
 import copy
 import sys
 
@@ -30,7 +40,6 @@ def initialize_tables(nodes, routing_table_node, links, count):
 			if(i == nodes[j[0]]):
 				routing_table_node[i][i][nodes[j[1]]] = int(j[2])
 				print("t="+str(count)+" distance from "+ nodes[i] +" to "+j[1]+" via "+j[1]+" is "+str(j[2]))
-				print("router")
 			if(i == nodes[j[1]]):
 				routing_table_node[i][i][nodes[j[0]]] = int(j[2])
 				print("t="+str(count)+" distance from "+ nodes[i] +" to "+j[0]+" via "+j[0]+" is "+str(j[2]))
@@ -39,6 +48,15 @@ def initialize_tables(nodes, routing_table_node, links, count):
 		routing_table_node[i][i][i] = 0
 	count += 1
 	return routing_table_node, count, nodes
+
+#Defining findinList accepts three parameters: table, index, and value
+#This function returns the index of the next hop for any node to reach the destination. 
+def findinList(table, index, value):
+	for i in range(0,len(table)):
+		if table[i][index]!=None:
+			if table[i][index]==value:
+				break
+	return i
 
 #Defining update_table accepts three parameters: nodes, routing_table_node, and count
 #This function update the routing table till convergence is achieved based on the algorithm. 
@@ -50,16 +68,24 @@ def update_table(nodes, routing_table_node, count):
 		for j in range(0, len(routing_table_node[i])):
 			if(routing_table_node[i][i][j] != None): #check neighbour
 				for k in range(0, len(routing_table_node[i][j])):
-					if(min_column(routing_table_node[j],j) != None and min_column(old_table[j],k) != None):
+					if((min_column(routing_table_node[j],j) != None) and (min_column(old_table[j],k) != None)):
+
 						if(k != i and i!=j
 							and routing_table_node[i][j][k] !=
 							 min_column(old_table[j],k) + nodes[nodes[i]+nodes[j]]):
+								
 							routing_table_node[i][j][k] = min_column(old_table[j],k) + nodes[nodes[i]+nodes[j]]#min_column(old_table[i],j)							
 							if(min_column(old_table[i],j) != min_column(old_table[j],k) + nodes[nodes[i]+nodes[j]] and j != k):
+								if(findinList(old_table[j],k,min_column(old_table[j],k))==i):
+									if(min_column(old_table[i],j) != min_column(old_table[j],k) + nodes[nodes[i]+nodes[j]] and j != k):
+										print("t="+str(count)+" distance from "+ nodes[i] +" to "+nodes[k]+" via "+nodes[j]+" is INF")
+									continue;
 								print("t="+str(count)+" distance from "+ nodes[i] +" to "+nodes[k]+" via "+nodes[j]+" is "+str(routing_table_node[i][j][k]))
 							change = 1
+
 						if(k == i):
 							routing_table_node[i][j][k] = 0
+
 	return change, routing_table_node
 
 #Defining print_routing_routes accepts two parameters: nodes and routing_table_node
@@ -70,6 +96,15 @@ def print_routing_routes(nodes, routing_table_node):
 			if(i!=j):
 				print("router "+nodes[i]+": "+nodes[j]+" is "+str(min_column(routing_table_node[i], j))+" routing through "+ nodes[route_through(min_column(routing_table_node[i],j), routing_table_node[i], j, i)])
 		print(" ")
+
+#Defining poison_reverse accepts two parameters: nodes and routing_table_node
+#This function resets the weight in the routing table. 
+def poison_reverse(nodes, routing_table_node):
+	for i in range(0, len(routing_table_node)):
+		for k in range(0, len(routing_table_node[i][i])):
+			if(routing_table_node[i][i][k] != min_column(routing_table_node[i], k)):
+				routing_table_node[i][i][k] = None
+	return routing_table_node
 
 #Defining reinitialize_tables accepts four parameters: nodes, routing_table_node, links, and count
 #This function reinitialize the routing table based on changed link weights. 
@@ -112,7 +147,7 @@ changeConfigL = open(str(sys.argv[2]), "r")
 changed_config = changeConfigL.read().split('\n')
 changeConfigL.close()
 
-next_line_no=0
+next_line_no = 0
 no_of_nodes = int(configuration[next_line_no])
 next_line_no += 1
 
@@ -120,6 +155,7 @@ nodes = {}
 for i in range(0, no_of_nodes):
 	nodes[configuration[next_line_no+i]] = i
 	nodes[i] = configuration[next_line_no+i]
+
 print("\n#START\n")
 
 next_line_no += no_of_nodes
@@ -133,7 +169,7 @@ for i in range(0,no_of_nodes):
 		routing_table_node[i].append([])
 		for k in range(0,no_of_nodes):
 			routing_table_node[i][j].append(None)
-
+		
 links = []
 for i in range(0, no_of_links):
 	links.append(configuration[next_line_no+i])
@@ -145,12 +181,14 @@ change = 1
 while(change == 1):
 	change, routing_table_node = update_table(nodes, routing_table_node, count)
 	count += 1
+routing_table_node = poison_reverse(nodes, routing_table_node)
 
 print("\n#INITIAL \n")
 print_routing_routes(nodes, routing_table_node)
 
 print("\n#UPDATE\n")
 routing_table_node = changed_configuration(nodes, routing_table_node, changed_config[1:len(changed_config)])
+routing_table_node = poison_reverse(nodes, routing_table_node)
 
 print("\n#FINAL\n")
 print_routing_routes(nodes, routing_table_node)
