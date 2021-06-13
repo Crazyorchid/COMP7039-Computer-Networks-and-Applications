@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 from copy import deepcopy
 INF = 16
-<<<<<<< .mine
-#get input
+# take input
 def getInput():
     last = '   '
     num = []
@@ -28,7 +27,7 @@ def getInput():
             message.append(router)
         last = router
     return num[:-1], messageList[:-1]
-#deal with INF and num in the table, push in INF if the path has not been determined yet
+#define changes
 def change(num):
     if num<INF:
         return str(num)
@@ -36,7 +35,7 @@ def change(num):
         return '-'
     else:
         return "INF"
-#create the router
+#print the tabel
 def printInfo(tableDict,idx):
     for k,v in tableDict.items():
         _tmp = sorted([item for item in v.keys()])
@@ -46,7 +45,7 @@ def printInfo(tableDict,idx):
             __tmp = [change(tableDict[k][_][_k]) for _ in _tmp]
             __tmp = [_k]+__tmp
             print(" ".join(__tmp))
-#print the router session
+#print the current session
 def printSession(tableDict):
     routers = sorted(tableDict.keys())
     for item in routers:
@@ -59,8 +58,7 @@ def printSession(tableDict):
                     data = tableDict[item][_][i]
                     idx = _
             print("router {}: {} is {} routing through {}".format(item,i,data,idx))
-
-#DV algorithem and update
+#algorithm and DV
 def DistanceVector():
     routers, message = getInput()
     routers = sorted(routers)
@@ -85,7 +83,7 @@ def DistanceVector():
             _tableDict[_from][_to][_to] = _num if _num != -1 else INF
             _tableDict[_to][_from][_from] = _num if _num != -1 else INF
         
-        # DV Loop
+        # Loop
         flag = False
         count = 0
         while not flag:
@@ -119,7 +117,7 @@ def DistanceVector():
         
 
 
-#Main function
+#Main
 DistanceVector()
 
 
