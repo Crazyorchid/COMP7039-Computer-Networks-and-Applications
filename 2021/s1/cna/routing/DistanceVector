@@ -3,11 +3,6 @@ from copy import deepcopy
 INF = 16
 <<<<<<< .mine
 #get input
-||||||| .r444
-
-=======
-# 算法
->>>>>>> .r451
 def getInput():
     last = '   '
     num = []
