@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 from copy import deepcopy
 INF = 16
+<<<<<<< .mine
+#take input
+||||||| .r444
+
+=======
 # 算法
+>>>>>>> .r451
 def getInput():
     last = '   '
     num = []
@@ -27,6 +33,11 @@ def getInput():
             message.append(router)
         last = router
     return num[:-1], messageList[:-1]
+<<<<<<< .mine
+#algorithm and process data
+||||||| .r444
+
+=======
 def change(num):
     if num<INF:
         return str(num)
@@ -35,6 +46,7 @@ def change(num):
     else:
         return "INF"
 
+>>>>>>> .r451
 def printInfo(tableDict,idx):
     for k,v in tableDict.items():
         _tmp = sorted([item for item in v.keys()])
@@ -89,6 +101,11 @@ def DistanceVector():
             count += 1
             flag = True
 
+<<<<<<< .mine
+#apply the algorithm
+||||||| .r444
+
+=======
             for item in routers:
                 subs = [i for i in routers if i!=item]
                 for i in subs:
@@ -133,7 +150,8 @@ def DistanceVector():
         printSession(tableDict)        
         
 
-
+>>>>>>> .r451
+#main dunction
 
 DistanceVector()
 
