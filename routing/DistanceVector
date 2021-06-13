@@ -101,7 +101,7 @@ def DistanceVector():
                             to_bias = 0
                         else:
                             _subs = [t for t in routers if (t!= i)]
-                            if count == 1:
+                            if time != 0 and count == 1:
                                 to_bias = min([__tableDict[i][_][j] for _ in _subs])
                             else:
                                 to_bias = min([_tableDict[i][_][j] for _ in _subs])
