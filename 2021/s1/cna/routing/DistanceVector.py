@@ -77,7 +77,7 @@ def DistanceVector():
             for _to in subs:
                 tableDict[item][_from][_to] = INF
     total = 0
-    # 对每组状态
+    # 对每组状态进行更新
     for time in range(sessionsNum):
         # 备份原始路由表
         _tableDict = deepcopy(tableDict)
